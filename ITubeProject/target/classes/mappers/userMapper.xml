@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.itube.persistence.UserMapper">
+	<select id="selectAll" resultType="com.itube.domain.UserVO">
+		select * from itube_users
+	</select>
+	<select id="selectOne" resultType="com.itube.domain.UserVO">
+		select * from itube_users where id=#{id} and pwd=#{pwd}
+	</select>
+	<select id="selectID" resultType="com.itube.domain.UserVO">
+		select * from itube_users where id=#{id}
+	</select>
+	<select id="selectNickname" resultType="com.itube.domain.UserVO">
+		select * from itube_users where nickname=#{nickname}
+	</select>
+	<select id="selectEmail" resultType="com.itube.domain.UserVO">
+		select * from itube_users where email=#{email}
+	</select>
+	<select id="selectUID" resultType="com.itube.domain.UserVO">
+		select * from itube_users where uid=#{uid}
+	</select>
+	<select id="selectGrade">
+		select * from itube_users where grade=#{grade}
+	</select>
+	<insert id="insert" parameterType="com.itube.domain.UserVO">
+		insert into itube_users values
+		(#{uid},#{id},#{pwd},#{email},#{nickname},#{grade},#{emailConfirm})
+	</insert>
+	<update id="update" parameterType="com.itube.domain.UserVO">
+		update itube_users set
+		pwd=#{pwd},email=#{email},nickname=#{nickname}
+		where uid=#{uid}
+	</update>
+	<update id="updateById">
+		update itube_users set
+		grade=#{grade}
+		where id=#{id}
+	</update>
+	<delete id="delete" parameterType="string">
+		delete from itube_users where uid=#{uid}
+	</delete>
+	<delete id="deleteById" parameterType="string">
+		delete from itube_users where id=#{id}
+	</delete>
+</mapper>  

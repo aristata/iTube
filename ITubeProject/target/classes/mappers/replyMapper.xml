@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.itube.mappers.ReplyMapper">
+	
+	<select id="listAll" resultType="com.itube.domain.ReplyVO">
+		select * 
+		from itube_replies
+		where pid = #{replyvo.pid}
+		order by rid desc 
+	</select>	
+	<insert id="insert" parameterType="com.itube.domain.ReplyVO">
+		insert into itube_replies (pid, content, nickname)
+		values (#{pid}, #{content}, #{nickname})
+	</insert>
+	<update id="update" parameterType="com.itube.domain.ReplyVO">
+		update itube_replies
+		set content = #{replyvo.content}
+		where rid = #{replyvo.rid}
+	</update>
+	<delete id="delete" parameterType="int">
+		delete from itube_replies
+		where rid = #{rid}
+	</delete>
+	<update id="up" parameterType="int">
+		update itube_replies
+		set up = up + 1
+		where rid = #{rid}
+	</update>
+	<update id="down" parameterType="int">
+		update itube_replies
+		set down = down + 1
+		where rid = #{rid}
+	</update>
+		
+	<!-- 세션 아이디 중복 업다운 방지  -->
+	<select id="upDownTypeGet" resultType="string">
+		select type from itube_replies_ud where rid=#{rid} and id=#{sessionid}
+	</select> 
+	<insert id="insertUpDown">
+		insert into itube_replies_ud values(#{sessionid},#{rid},#{type})
+	</insert> 
+	
+	<!-- 댓글 삭제시 해당 게시물의 번호를 알아내는 기능 -->
+	<select id="getPid" resultType="int">
+		select pid
+		from itube_replies
+		where rid = #{rid}
+	</select>
+</mapper>  

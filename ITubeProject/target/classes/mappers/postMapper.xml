@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.itube.mappers.PostMapper">
+  
+  <insert id="insert">
+ 	insert into itube_posts (title, nickname, content, url, category)
+  	values(#{title}, #{nickname}, #{content}, #{url}, #{category})
+  </insert>
+  
+    <insert id="bookmark">
+  	insert into itube_posts_bookmark (uid, pid)
+  	values(#{uid}, #{pid})
+  </insert>
+  <select id="viewBookmark" resultType="com.itube.domain.PostVO">
+  	select * from itube_posts 
+  	where pid in (select pid from itube_posts_bookmark where uid=#{uid} )
+  
+  </select>
+  <select id="read" resultType="com.itube.domain.PostVO">
+ 	 select * from itube_posts where pid = #{pid}
+  </select>
+  <select id="readByUrl" resultType="com.itube.domain.PostVO">
+  	select * from itube_posts where url= #{url}
+  </select>
+  <update id="update" parameterType="com.itube.domain.PostVO">
+  	update itube_posts 
+  	set title=#{title}, content=#{content}, url=#{url}
+ 	where pid=#{pid}
+  </update>
+  
+  <update id="updateCategory">
+  	update itube_posts
+  	set category = #{postCategory}
+  	where pid = #{postID}
+  </update>
+  
+  <update id="updateViewCnt">
+  	update itube_posts
+  	set viewcnt = viewcnt + 1 
+  	where pid = #{pid}
+  </update>
+  
+  <update id="updateViewCntByURL">
+  	update itube_posts
+  	set viewcnt = viewcnt + 1 
+  	where url = #{url}
+  </update>
+  
+  <update id="updateLike">
+  	update itube_posts
+  	set up = up + 1
+  	where pid = #{pid}
+  </update>
+  
+  <update id="updateDislike">
+  	update itube_posts
+  	set down = down + 1
+  	where pid = #{pid}
+  </update>
+  
+  <delete id="delete" parameterType="com.itube.domain.PostVO">
+  	delete from itube_posts
+  	where pid=#{pid}
+  </delete>
+  
+  <select id="listAll" resultType="com.itube.domain.PostVO">
+  	select * from itube_posts
+  </select>
+  
+ <select id="listPage"  resultType="com.itube.domain.PostVO">
+ <![CDATA[
+ select * from 
+   itube_posts 
+ where pid > 0 
+ order by pid desc, regdate desc
+ limit #{page}, 10
+ ]]>  
+ </select>
+ <select id="listPage2"  resultType="com.itube.domain.PostVO">
+ <![CDATA[
+ select * from 
+   itube_posts 
+ where pid > 0 and category = #{category}
+ order by pid desc, regdate desc
+ limit #{page}, 10
+ ]]>  
+ </select>
+  <select id="listCriteria"  resultType="com.itube.domain.PostVO">
+ <![CDATA[
+ select * from 
+   itube_posts 
+ where pid > 0
+ order by pid desc, regdate desc
+ limit #{pageStart}, #{perPageNum}
+ ]]>  
+ </select>
+  <select id="listCriteria2"  resultType="com.itube.domain.PostVO">
+ <![CDATA[
+ select * from 
+   itube_posts 
+ where pid > 0 and category = #{category}
+ order by pid desc, regdate desc
+ limit #{pageStart}, #{perPageNum}
+ ]]>  
+ </select>
+
+ <select id="countPaging"  resultType="int">
+ <![CDATA[
+ select 
+   count(pid) 
+ from 
+   itube_posts 
+ where 
+   pid > 0 
+ ]]>
+ </select>
+  <select id="countPaging2"  resultType="int">
+ <![CDATA[
+ select 
+   count(pid) 
+ from 
+   itube_posts 
+ where 
+   pid > 0 and category = #{category}
+ ]]>
+ </select>
+ <sql id="search">
+ <if test="searchType != null" > 
+   <if test="searchType == 't'.toString()">
+     and title like CONCAT('%', #{keyword}, '%')
+   </if>
+   <if test="searchType == 'c'.toString()">
+     and content like CONCAT('%', #{keyword}, '%')
+   </if>
+   <if test="searchType == 'w'.toString()">
+     and nickname like CONCAT('%', #{keyword}, '%')
+   </if>     
+   <if test="searchType == 'tc'.toString()">
+     and ( title like CONCAT('%', #{keyword}, '%') OR content like CONCAT('%', #{keyword}, '%'))
+   </if>        
+   <if test="searchType == 'cw'.toString()">
+     and ( content like CONCAT('%', #{keyword}, '%') OR nickname like CONCAT('%', #{keyword}, '%'))
+   </if>        
+   <if test="searchType == 'tcw'.toString()">
+     and (   title like CONCAT('%', #{keyword}, '%') 
+           OR 
+             content like CONCAT('%', #{keyword}, '%') 
+           OR 
+             nickname like CONCAT('%', #{keyword}, '%'))
+   </if>              
+ </if>  
+</sql>
+  <select id="listSearch" resultType="com.itube.domain.PostVO">
+<![CDATA[  
+  select * from 
+  itube_posts 
+  where 
+  pid > 0 
+]]>  
+
+  <include refid="search"></include>
+  
+<![CDATA[    
+  order by pid desc
+  limit #{pageStart}, #{perPageNum}
+]]>  
+</select>
+  
+<select id="listSearchCount" resultType="int">
+<![CDATA[  
+  select count(pid) 
+  from itube_posts 
+  where pid > 0 
+]]>
+  <include refid="search"></include>
+ 
+</select>
+  
+  <!-- 베스트 게시물 조회 -->
+	<select id="bestList" resultType="com.itube.domain.PostVO">
+		select *
+		from itube_posts
+		order by ((viewcnt * 0.5) + (up * 2) - (down * 2)) desc
+		limit 10
+	</select>
+	<!-- 업, 다운 카운트 조회 -->
+	<select id="likeCountByPid" resultType="int">
+		select up from itube_posts where pid=#{pid}
+	</select>   
+	<select id="dislikeCountByPid" resultType="int">
+		select down from itube_posts where pid=#{pid}
+	</select>
+	<!-- 세션 아이디 중복 업다운 방지  -->
+	<select id="upDownTypeGet" resultType="string">
+		select type from itube_posts_ud where pid=#{pid} and id=#{sessionid}
+	</select> 
+	<insert id="insertUpDown">
+		insert into itube_posts_ud values(#{sessionid},#{pid},#{type})
+	</insert> 
+	
+	<!-- 댓글 개수 카운트 업데이트-->
+	<update id="updateReplyCnt">
+		update itube_posts
+		set replycnt = replycnt + #{cnt}
+		where pid = #{pid}
+	</update>
+</mapper>
